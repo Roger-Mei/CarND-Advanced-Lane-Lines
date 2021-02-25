@@ -175,7 +175,48 @@ combined_binary = pipeline(undist, sx_thresh=(30,100))
 # Apply a perspective transform to rectify binary image ("birds-eye view").                                               #
 ###########################################################################################################################
 
-# Detect lane pixels and fit to find the lane boundary.
+"""
+Useful function construction for this part
+"""
+def warp(img):
+    # Retrive image size
+    img_size = (img.shape[1], img.shape[0])
+
+    # Four source coordinates
+    src = np.float32(
+        [[760, 480],
+         [1110, 690],
+         [290, 690],
+         [570, 480]])
+
+    # Four desired coordinates
+    dst = np.float32(
+        [[820, 240],
+         [820, 490],
+         [410, 490],
+         [410, 240]])
+
+    # Compute the perspective transformation matrix
+    M = cv2.getPerspectiveTransform(src, dst)
+
+    # Create warped image - use linear interpolation
+    warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
+
+    return warped
+
+"""
+Implementation of this section
+"""
+warped = warp(combined_binary)
+
+###########################################################################################################################
+# Detect lane pixels and fit to find the lane boundary.                                                                   #
+###########################################################################################################################
+
+
+
+
+
 # Determine the curvature of the lane and vehicle position with respect to center.
 # Warp the detected lane boundaries back onto the original image.
 # Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
