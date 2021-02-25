@@ -59,6 +59,9 @@ def cal_undistort(img, objpoints, imgpoints):
     undist = cv2.undistort(img, mtx, dist, None, mtx)
     return undist
 
+"""
+Implementation of this section
+"""
 # Read in an image from 'test_images'
 img = mpimg.imread('test_images/test1.jpg')
 
@@ -126,24 +129,52 @@ def dir_threshold(img, sobel_kernel=3, dir_thresh=(0, np.pi/2)):
     # Take the absolute value of the gradient direction
     absgraddir = np.arctan2(np.absolute(sobely), np.absolute(sobelx))
 
-    # create a binary copy
+    # Create a binary copy
     dir_binary = np.zeros_like(absgraddir)
 
     # Apply the threshold
     dir_binary[(absgraddir > dir_thresh[0]) & (absgraddir < dir_thresh[1])] = 1
     return dir_binary
 
-# Convert to HLS color space and separate S channel
-hls = cv2.cvtColor(undist, cv2.COLOR_RGB2HLS)
-s_channel = hls[:, :, 2]
+def hls_select(img, thresh=(0, 255)):
+    # Convert color to HLS scale
+    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+    
+    # Select the S channel
+    s_channel = hls[:,:,2]
 
-# Transform the original image to gray scale
-gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Create a binary copy
+    hls_binary = np.zeros_like(s_channel)
 
+    # Apply the threshold
+    hls_binary[(s_channel > thresh[0]) & (s_channel <= thresh[1])] = 1
+    return hls_binary
 
+def pipeline(undist, s_thresh=(170, 255), sx_thresh=(20, 100)):
+    # Apply HLS color space threshold
+    s_binary = hls_select(undist, thresh=s_thresh)
 
+    # Apply sobel X gradient threshold
+    sx_binary = abs_sobel_thresh(undist, orient='x', sobel_kernel=5, thresh=sx_thresh)
 
-# Apply a perspective transform to rectify binary image ("birds-eye view").
+    # Stack each channel to view their individual contributions in green and blue respectively
+    # This returns a stack of the two binary images, whose components you can see as different colors
+    color_binary = np.dstack(( np.zeros_like(s_binary), sx_binary, s_binary)) * 255
+
+    # Combine the two binary thresholds
+    combined_binary = np.zeros_like(sx_binary)
+    combined_binary[(s_binary == 1) | (sx_binary == 1)] = 1
+    return combined_binary
+
+"""
+Implementation of this section
+"""
+combined_binary = pipeline(undist, sx_thresh=(30,100))
+
+###########################################################################################################################
+# Apply a perspective transform to rectify binary image ("birds-eye view").                                               #
+###########################################################################################################################
+
 # Detect lane pixels and fit to find the lane boundary.
 # Determine the curvature of the lane and vehicle position with respect to center.
 # Warp the detected lane boundaries back onto the original image.
@@ -151,11 +182,11 @@ gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
-f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
-f.tight_layout()
-ax1.imshow(img)
-ax1.set_title('Original Image', fontsize = 50)
-ax2.imshow(undist)
-ax2.set_title('Undistorted Image', fontsize = 50)
-plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
+# f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
+# f.tight_layout()
+# ax1.imshow(color_binary)
+# ax1.set_title('Stacked Threshold', fontsize = 20)
+# ax2.imshow(combined_binary)
+# ax2.set_title('Combined S Channel and Gradient Chnannel', fontsize = 20)
+# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+# plt.show()
