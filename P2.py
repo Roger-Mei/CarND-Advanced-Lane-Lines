@@ -182,6 +182,8 @@ def warp(img):
     # Retrive image size
     img_size = (img.shape[1], img.shape[0])
 
+    print(img_size)
+
     # Four source coordinates
     src = np.float32(
         [[760, 480],
@@ -189,12 +191,19 @@ def warp(img):
          [290, 690],
          [570, 480]])
 
+    # # Four desired coordinates
+    # dst = np.float32(
+    #     [[820, 240],
+    #      [820, 490],
+    #      [410, 490],
+    #      [410, 240]])
+
     # Four desired coordinates
     dst = np.float32(
-        [[820, 240],
-         [820, 490],
-         [410, 490],
-         [410, 240]])
+        [[920, 0],
+         [920, 720],
+         [280, 720],
+         [280, 0]])
 
     # Compute the perspective transformation matrix
     M = cv2.getPerspectiveTransform(src, dst)
@@ -202,16 +211,17 @@ def warp(img):
     # Create warped image - use linear interpolation
     warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 
-    # Crop the warped image
-    warped = warped[:490, :]
-
     return warped
 
 """
 Implementation of this section
 """
-warped = warp(combined_binary)
+warped_binary = warp(combined_binary)
 
+warped2 = warp(img)
+
+# plt.imshow (warped2)
+# plt.show()
 ###########################################################################################################################
 # Detect lane pixels and fit to find the lane boundary.                                                                   #
 ###########################################################################################################################
@@ -219,11 +229,20 @@ warped = warp(combined_binary)
 """
 Useful function construction for this part
 """
+def hist(img):
+    # Grab only the bottom half of the image
+    bottom_half = img[img.shape[0]//2:, :]
 
+    # Sum across image pixels vertically
+    histgram = np.sum(bottom_half, axis=0)
 
-plt.imshow(warped)
-plt.show()
+    return histgram
 
+# Create histogram of image binary activations
+histogram = hist(warped_binary)
+
+# plt.plot(histogram)
+# plt.show()
 
 # Determine the curvature of the lane and vehicle position with respect to center.
 # Warp the detected lane boundaries back onto the original image.
@@ -231,11 +250,11 @@ plt.show()
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
-# f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
-# f.tight_layout()
-# ax1.imshow(color_binary)
-# ax1.set_title('Stacked Threshold', fontsize = 20)
-# ax2.imshow(combined_binary)
-# ax2.set_title('Combined S Channel and Gradient Chnannel', fontsize = 20)
-# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-# plt.show()
+f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
+f.tight_layout()
+ax1.imshow(warped_binary)
+ax1.set_title('Warped Binary', fontsize = 20)
+ax2.imshow(warped2)
+ax2.set_title('Warped Image', fontsize = 20)
+plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+plt.show()
