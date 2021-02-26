@@ -202,6 +202,9 @@ def warp(img):
     # Create warped image - use linear interpolation
     warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 
+    # Crop the warped image
+    warped = warped[:490, :]
+
     return warped
 
 """
@@ -213,8 +216,13 @@ warped = warp(combined_binary)
 # Detect lane pixels and fit to find the lane boundary.                                                                   #
 ###########################################################################################################################
 
+"""
+Useful function construction for this part
+"""
 
 
+plt.imshow(warped)
+plt.show()
 
 
 # Determine the curvature of the lane and vehicle position with respect to center.
