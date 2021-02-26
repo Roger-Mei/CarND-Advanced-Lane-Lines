@@ -63,7 +63,7 @@ def cal_undistort(img, objpoints, imgpoints):
 Implementation of this section
 """
 # Read in an image from 'test_images'
-img = mpimg.imread('test_images/test1.jpg')
+img = mpimg.imread('test_images/test2.jpg')
 
 # undistort the raw image
 undist = cal_undistort(img, objpoints, imgpoints)
@@ -182,21 +182,12 @@ def warp(img):
     # Retrive image size
     img_size = (img.shape[1], img.shape[0])
 
-    print(img_size)
-
     # Four source coordinates
     src = np.float32(
         [[760, 480],
          [1110, 690],
          [290, 690],
          [570, 480]])
-
-    # # Four desired coordinates
-    # dst = np.float32(
-    #     [[820, 240],
-    #      [820, 490],
-    #      [410, 490],
-    #      [410, 240]])
 
     # Four desired coordinates
     dst = np.float32(
@@ -218,10 +209,6 @@ Implementation of this section
 """
 warped_binary = warp(combined_binary)
 
-warped2 = warp(img)
-
-# plt.imshow (warped2)
-# plt.show()
 ###########################################################################################################################
 # Detect lane pixels and fit to find the lane boundary.                                                                   #
 ###########################################################################################################################
@@ -238,11 +225,101 @@ def hist(img):
 
     return histgram
 
-# Create histogram of image binary activations
-histogram = hist(warped_binary)
 
-# plt.plot(histogram)
-# plt.show()
+def find_lane_pixels(warped_binary):
+    # Create histogram of image binary activations
+    histogram = hist(warped_binary)
+
+    # Create an output image to draw on and visualize the result
+    out_img = np.dstack((warped_binary, warped_binary, warped_binary))*255
+
+    # Find the peaks of the left and right half of the histograms
+    midpoint = np.int(histogram.shape[0]//2)
+    left_base = np.argmax(histogram[:midpoint])
+    right_base = np.argmax(histogram[midpoint:]) + midpoint
+
+    # Choose the number of sliding windows
+    nwindows = 9
+
+    # Set the width of the windows +/- margin
+    margin = 100
+
+    # Set minimum number of pixels found to recenter window
+    minpix = 50
+
+    # Set height of windows
+    window_height = np.int(warped_binary.shape[0]//nwindows)
+
+    # identify the x and y positions of all nonzero pixels in the image
+    nonzero = warped_binary.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+
+    # Current positions to be updated later for each window in nwindows
+    leftx_current = left_base
+    rightx_current = right_base
+
+    # Create empty list to receive left and right lane pixel indices
+    left_lane_inds = []
+    right_lane_inds = []
+
+    # Loop through the windows
+    for window in range(nwindows):
+        # Identify window bounderies in x and y, as well as right and left
+        win_y_low = warped_binary.shape[0] - (window + 1)*window_height
+        win_y_high = warped_binary.shape[0] - window*window_height
+        print(win_y_low, win_y_high)
+        win_xleft_low = leftx_current - margin
+        win_xleft_high = leftx_current + margin
+        win_xright_low = rightx_current - margin
+        win_xright_high = rightx_current + margin
+
+        # Draw the windows on the visualization image
+        cv2.rectangle(out_img, (win_xleft_low, win_y_low), (win_xleft_high, win_y_high), (0, 255, 0), 2)
+        cv2.rectangle(out_img, (win_xright_low, win_y_low), (win_xright_high, win_y_high), (0, 255, 0), 2)
+
+        # Identify the nonzero pixels in x and y within the window
+        good_left_inds = ((nonzeroy > win_y_low) & (nonzeroy < win_y_high) 
+        & (nonzerox > win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
+        good_right_inds = ((nonzeroy > win_y_low) & (nonzeroy < win_y_high) 
+        & (nonzerox > win_xright_low) & (nonzerox < win_xright_high)).nonzero()[0]
+
+        # Append these indices to the lists
+        left_lane_inds.append(good_left_inds)
+        right_lane_inds.append(good_right_inds)
+
+        # Justify the need of recentering windows
+        if len(good_left_inds) > minpix:
+            leftx_current = np.int(np.mean(nonzerox[good_left_inds]))
+        if len(good_right_inds) > minpix:
+            rightx_current = np.int(np.mean(nonzerox[good_right_inds])) 
+        
+    # Concatenate the arrays of indices (previously was a list of lists of pixels)
+    try:
+        left_lane_inds = np.concatenate(left_lane_inds)
+        right_lane_inds = np.concatenate(right_lane_inds)
+    except ValueError:
+        # Avoid an error if the above is not implemented fully
+        pass
+
+    # Extract the left line and right line pixels
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+
+    return leftx, lefty, rightx, righty, out_img
+
+"""
+Implementation of this section
+"""
+leftx, lefty, rightx, righty, out_img = find_lane_pixels(warped_binary)
+
+plt.imshow(out_img)
+plt.show()
+
+
+
 
 # Determine the curvature of the lane and vehicle position with respect to center.
 # Warp the detected lane boundaries back onto the original image.
@@ -250,11 +327,11 @@ histogram = hist(warped_binary)
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
-f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
-f.tight_layout()
-ax1.imshow(warped_binary)
-ax1.set_title('Warped Binary', fontsize = 20)
-ax2.imshow(warped2)
-ax2.set_title('Warped Image', fontsize = 20)
-plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
+# f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
+# f.tight_layout()
+# ax1.imshow(warped_binary)
+# ax1.set_title('Warped Binary', fontsize = 20)
+# ax2.imshow(warped2)
+# ax2.set_title('Warped Image', fontsize = 20)
+# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+# plt.show()
