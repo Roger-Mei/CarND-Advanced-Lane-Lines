@@ -268,7 +268,6 @@ def find_lane_pixels(warped_binary):
         # Identify window bounderies in x and y, as well as right and left
         win_y_low = warped_binary.shape[0] - (window + 1)*window_height
         win_y_high = warped_binary.shape[0] - window*window_height
-        print(win_y_low, win_y_high)
         win_xleft_low = leftx_current - margin
         win_xleft_high = leftx_current + margin
         win_xright_low = rightx_current - margin
@@ -310,15 +309,43 @@ def find_lane_pixels(warped_binary):
 
     return leftx, lefty, rightx, righty, out_img
 
+def fit_polynomial(warped_binary):
+    # Find out lane pixels first
+    leftx, lefty, rightx, righty, out_img = find_lane_pixels(warped_binary)
+    
+    # Find second order polynomial to each line
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+
+    # Generate x and y values for plotting
+    ploty = np.linspace(0, warped_binary.shape[0] - 1, warped_binary.shape[0])
+    try:
+        left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+        right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    except TypeError:
+        # Avoids an error if 'left_fit' or 'right_fit' are still none or incorrect
+        print('The function failed to fit a line!')
+        left_fitx = 1*ploty**2 + 1*ploty
+        right_fitx = 1*ploty**2 + 1*ploty
+
+    # Colors in the left and right lane regions
+    out_img[lefty, leftx] = [255, 0, 0]
+    out_img[righty, rightx] = [0, 0, 255]
+
+    # Plots the left and right polynomials on the lane lines
+    plt.plot(left_fitx, ploty, color = 'yellow')
+    plt.plot(right_fitx, ploty, color = 'yellow')
+
+    return out_img
+
 """
 Implementation of this section
 """
-leftx, lefty, rightx, righty, out_img = find_lane_pixels(warped_binary)
+
+out_img = fit_polynomial(warped_binary)
 
 plt.imshow(out_img)
 plt.show()
-
-
 
 
 # Determine the curvature of the lane and vehicle position with respect to center.
