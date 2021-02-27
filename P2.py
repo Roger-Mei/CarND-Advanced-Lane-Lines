@@ -150,7 +150,7 @@ def hls_select(img, thresh=(0, 255)):
     hls_binary[(s_channel > thresh[0]) & (s_channel <= thresh[1])] = 1
     return hls_binary
 
-def pipeline(undist, s_thresh=(170, 255), sx_thresh=(20, 100)):
+def pipeline_threshlold(undist, s_thresh=(170, 255), sx_thresh=(20, 100)):
     # Apply HLS color space threshold
     s_binary = hls_select(undist, thresh=s_thresh)
 
@@ -169,7 +169,7 @@ def pipeline(undist, s_thresh=(170, 255), sx_thresh=(20, 100)):
 """
 Implementation of this section
 """
-combined_binary = pipeline(undist, sx_thresh=(30,100))
+combined_binary = pipeline_threshlold(undist, sx_thresh=(30,100))
 # plt.imshow(combined_binary)
 # plt.show()
 
@@ -491,8 +491,39 @@ Implementation of this section
 """
 unwarped_img_with_data = add_numerical_estimation(unwarped_img, left_curverad, right_curverad, center_dist)
 
-plt.imshow(unwarped_img_with_data)
-plt.show()
+###########################################################################################################################
+# Build up the image process pipeline                                                                                     #
+###########################################################################################################################
+
+def process_image(img, objpoints, imgpoints):
+    # Note: before running the pipeline, you should have the objpoints and imgpoints ready
+    # Undistort image
+    undist = cal_undistort(img, objpoints, imgpoints)
+
+    # Implement the threshold pipeline to get the 
+    combined_binary = pipeline_threshlold(undist, sx_thresh=(30,100))
+
+    # Warp the binary image via perspective transform
+    warped_binary, Minv = warp(combined_binary)
+
+    # Fit the lane line into second order polynomials
+    result, left_fit, right_fit, ploty = fit_polynomial(warped_binary)
+
+    # Estimate the curvature radius as well as the distance to lane center
+    left_curverad, right_curverad, center_dist = measure_curvature_real(left_fit, right_fit, warped_binary)
+
+    # Warp the detected lane boundaries back onto the original image
+    unwarped_img = draw_lane(undist, warped_binary, left_fit, right_fit, ploty, Minv)
+
+    # Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position
+    unwarped_img_with_data = add_numerical_estimation(unwarped_img, left_curverad, right_curverad, center_dist)
+
+    return unwarped_img_with_data
+
+result = process_image(img, objpoints, imgpoints)
+
+# plt.imshow(result)
+# plt.show()
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
