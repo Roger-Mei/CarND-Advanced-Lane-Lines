@@ -63,7 +63,7 @@ def cal_undistort(img, objpoints, imgpoints):
 Implementation of this section
 """
 # Read in an image from 'test_images'
-img = mpimg.imread('test_images/test2.jpg')
+img = mpimg.imread('test_images/test1.jpg')
 
 # undistort the raw image
 undist = cal_undistort(img, objpoints, imgpoints)
@@ -414,11 +414,6 @@ Implementation of this section
 """
 left_curverad, right_curverad, center_dist = measure_curvature_real(left_fit, right_fit, warped_binary)
 
-print('The curvature of current lane is: ', )
-print(left_curverad, 'm', right_curverad, 'm')
-print('Vehicle position with respect to the lane center is:')
-print(center_dist, 'm')
-
 ###########################################################################################################################
 # Warp the detected lane boundaries back onto the original image.                                                         #
 ###########################################################################################################################
@@ -460,19 +455,44 @@ Implementation of this section
 """
 unwarped_img = draw_lane(undist, warped_binary, left_fit, right_fit, ploty, Minv)
 
-plt.imshow(unwarped_img)
-plt.show()
-
 ###########################################################################################################################
 # Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.           #
 ###########################################################################################################################
 """
 Useful function construction for this part
 """
+def add_numerical_estimation(unwarped_img, left_curverad, right_curverad, center_dist):
+    # Copy the original image for drawing data
+    new_img = np.copy(unwarped_img)
+
+    # Estimate the radious
+    curve_rad = (left_curverad + right_curverad)/2
+
+    # Draw curvature data
+    font = cv2.FONT_HERSHEY_COMPLEX
+    text = 'Curve radious: ' + '{:04.2f}'.format(curve_rad) + 'm'
+    cv2.putText(new_img, text, (40,70), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
+
+    # Draw dirction data
+    direction = ''
+    if center_dist > 0:
+        direction = 'right'
+    elif center_dist < 0:
+        direction = 'left'
+
+    abs_center_dist = np.absolute(center_dist)
+    text = '{:04.3f}'.format(abs_center_dist) + 'm ' + direction + ' of center'
+    cv2.putText(new_img, text, (40,120), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
+
+    return new_img
 
 """
 Implementation of this section
 """
+unwarped_img_with_data = add_numerical_estimation(unwarped_img, left_curverad, right_curverad, center_dist)
+
+plt.imshow(unwarped_img_with_data)
+plt.show()
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
