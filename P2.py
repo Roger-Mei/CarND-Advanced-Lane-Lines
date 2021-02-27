@@ -211,15 +211,18 @@ def warp(img):
     # Compute the perspective transformation matrix
     M = cv2.getPerspectiveTransform(src, dst)
 
+    # Compute the inverse perspective transformation matrix for later use
+    Minv = cv2.getPerspectiveTransform(dst, src)
+
     # Create warped image - use linear interpolation
     warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 
-    return warped
+    return warped, Minv
 
 """
 Implementation of this section
 """
-warped_binary = warp(combined_binary)
+warped_binary, Minv = warp(combined_binary)
 
 ###########################################################################################################################
 # Detect lane pixels and fit to find the lane boundary.                                                                   #
@@ -366,20 +369,17 @@ def fit_polynomial(warped_binary):
     cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
     result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-    # Plot the polynomial lines onto the image
-    plt.plot(left_fitx, ploty, color='yellow')
-    plt.plot(right_fitx, ploty, color='yellow')
+    # # Plot the polynomial lines onto the image
+    # plt.plot(left_fitx, ploty, color='yellow')
+    # plt.plot(right_fitx, ploty, color='yellow')
 
     return result, left_fit, right_fit, ploty
 
 """
 Implementation of this section
 """
-
 result, left_fit, right_fit, ploty = fit_polynomial(warped_binary)
 
-plt.imshow(result)
-plt.show()
 ###########################################################################################################################
 # Determine the curvature of the lane and vehicle position with respect to center.                                        #
 ###########################################################################################################################
@@ -412,7 +412,6 @@ def measure_curvature_real(left_fit, right_fit, warped_binary):
 """
 Implementation of this section
 """
-
 left_curverad, right_curverad, center_dist = measure_curvature_real(left_fit, right_fit, warped_binary)
 
 print('The curvature of current lane is: ', )
@@ -420,11 +419,60 @@ print(left_curverad, 'm', right_curverad, 'm')
 print('Vehicle position with respect to the lane center is:')
 print(center_dist, 'm')
 
+###########################################################################################################################
+# Warp the detected lane boundaries back onto the original image.                                                         #
+###########################################################################################################################
+"""
+Useful function construction for this part
+"""
+def draw_lane(undist, warped_binary, left_fit, right_fit, ploty, Minv):
+    # Copy the original image 
+    new_img = np.copy(undist)
 
+    # Create an imgage to draw the lines on
+    warped_zero = np.zeros_like(warped_binary).astype(np.uint8)
+    color_warp = np.dstack((warped_zero, warped_zero, warped_zero))
 
+    # Generate polynomial spline
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
 
-# Warp the detected lane boundaries back onto the original image.
-# Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts = np.hstack((pts_left, pts_right))
+
+    # Draw the line on to the warped blank image 
+    cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
+    cv2.polylines(color_warp, np.int32([pts_left]), isClosed = False, color = (255, 0, 0), thickness=15)
+    cv2.polylines(color_warp, np.int32([pts_right]), isClosed = False, color = (0, 0, 255), thickness=15)
+
+    # Warp the blank back to the original image space
+    newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
+
+    # combine the result with the original image 
+    unwarped_img = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+
+    return unwarped_img
+
+"""
+Implementation of this section
+"""
+unwarped_img = draw_lane(undist, warped_binary, left_fit, right_fit, ploty, Minv)
+
+plt.imshow(unwarped_img)
+plt.show()
+
+###########################################################################################################################
+# Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.           #
+###########################################################################################################################
+"""
+Useful function construction for this part
+"""
+
+"""
+Implementation of this section
+"""
 
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
