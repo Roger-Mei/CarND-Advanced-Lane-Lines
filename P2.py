@@ -170,6 +170,8 @@ def pipeline(undist, s_thresh=(170, 255), sx_thresh=(20, 100)):
 Implementation of this section
 """
 combined_binary = pipeline(undist, sx_thresh=(30,100))
+# plt.imshow(combined_binary)
+# plt.show()
 
 ###########################################################################################################################
 # Apply a perspective transform to rectify binary image ("birds-eye view").                                               #
@@ -182,19 +184,29 @@ def warp(img):
     # Retrive image size
     img_size = (img.shape[1], img.shape[0])
 
-    # Four source coordinates
-    src = np.float32(
-        [[760, 480],
-         [1110, 690],
-         [290, 690],
-         [570, 480]])
+    # # Four source coordinates
+    # src = np.float32(
+    #     [[760, 480],
+    #      [1110, 690],
+    #      [np.int(img.shape[1]//2), img.shape[0]],
+    #      [570, 480]])
 
-    # Four desired coordinates
-    dst = np.float32(
-        [[920, 0],
-         [920, img.shape[0]],
-         [280, img.shape[0]],
-         [280, 0]])
+    # # Four desired coordinates
+    # dst = np.float32(
+    #     [[980, 0],
+    #      [920, img.shape[0]],
+    #      [np.int(img.shape[1]//2), img.shape[0]-80],
+    #      [480, 0]])
+
+    src = np.float32([(575,464),
+                  (707,464), 
+                  (258,682), 
+                  (1049,682)])
+    dst = np.float32([(450,0),
+                  (img_size[0]-300,0),
+                  (450,img_size[1]),
+                  (img_size[0]-300,img_size[1])])
+
 
     # Compute the perspective transformation matrix
     M = cv2.getPerspectiveTransform(src, dst)
@@ -242,7 +254,7 @@ def find_lane_pixels(warped_binary):
     nwindows = 9
 
     # Set the width of the windows +/- margin
-    margin = 100
+    margin = 40
 
     # Set minimum number of pixels found to recenter window
     minpix = 50
@@ -311,7 +323,7 @@ def find_lane_pixels(warped_binary):
 
 def fit_polynomial(warped_binary):
     # Declare margin
-    margin = 100
+    margin = 40
 
     # Find out lane pixels first
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(warped_binary)
@@ -358,28 +370,55 @@ def fit_polynomial(warped_binary):
     plt.plot(left_fitx, ploty, color='yellow')
     plt.plot(right_fitx, ploty, color='yellow')
 
-    return result
+    return result, left_fit, right_fit, ploty
 
 """
 Implementation of this section
 """
 
-result = fit_polynomial(warped_binary)
+result, left_fit, right_fit, ploty = fit_polynomial(warped_binary)
 
 plt.imshow(result)
 plt.show()
-
 ###########################################################################################################################
 # Determine the curvature of the lane and vehicle position with respect to center.                                        #
 ###########################################################################################################################
 """
 Useful function construction for this part
 """
+def measure_curvature_real(left_fit, right_fit, warped_binary):
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 3.048/100
+    xm_per_pix = 2/378
+
+    # Define y-value where we want radius of curvature
+    h = warped_binary.shape[0]
+    ploty = np.linspace(0, h - 1, h)
+    y_eval = np.max(ploty)
+
+    # Calculate road curvature 
+    left_curverad = ((1 + (2*left_fit[0]*y_eval*ym_per_pix + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
+    right_curverad = ((1 + (2*right_fit[0]*y_eval*ym_per_pix + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])
+
+    # Calculate distance from center
+    car_position = warped_binary.shape[1]/2
+    left_lane_point = left_fit[0]*h**2 + left_fit[1]*h + left_fit[2]
+    right_lane_point = right_fit[0]*h**2 + right_fit[1]*h + right_fit[2]
+    lane_center_position = (left_lane_point + right_lane_point)/2
+    center_dist = (car_position - lane_center_position) * xm_per_pix
+
+    return left_curverad, right_curverad, center_dist
 
 """
 Implementation of this section
 """
 
+left_curverad, right_curverad, center_dist = measure_curvature_real(left_fit, right_fit, warped_binary)
+
+print('The curvature of current lane is: ', )
+print(left_curverad, 'm', right_curverad, 'm')
+print('Vehicle position with respect to the lane center is:')
+print(center_dist, 'm')
 
 
 
