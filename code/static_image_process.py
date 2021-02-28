@@ -77,7 +77,7 @@ warped_binary, Minv = src.functions.warp(combined_binary)
 """
 Implementation of this section
 """
-result, left_fit, right_fit, ploty = src.functions.fit_polynomial(warped_binary)
+tmp_result, left_fit, right_fit, ploty = src.functions.fit_polynomial(warped_binary)
 
 ###########################################################################################################################
 # Determine the curvature of the lane and vehicle position with respect to center.                                        #
@@ -85,7 +85,8 @@ result, left_fit, right_fit, ploty = src.functions.fit_polynomial(warped_binary)
 """
 Implementation of this section
 """
-left_curverad, right_curverad, center_dist = src.functions.measure_curvature_real(left_fit, right_fit, warped_binary)
+left_curverad, right_curverad = src.functions.measure_curvature_real(left_fit, right_fit, warped_binary)
+center_dist = src.functions.measure_center_dist_real(warped_binary, left_fit, right_fit)
 
 ###########################################################################################################################
 # Warp the detected lane boundaries back onto the original image.                                                         #
@@ -113,23 +114,6 @@ result = src.functions.process_image(img)
 
 plt.imshow(result)
 plt.show()
-
-###########################################################################################################################
-# Video output                                                                                                            #
-###########################################################################################################################
-"""
-Implementation of this section
-"""
-# # Import everything needed to edit/save/watch video clips
-# from moviepy.editor import VideoFileClip
-# from IPython.display import HTML
-
-# white_output = 'test_videos_output/solidWhiteRight.mp4'
-# clip1 = VideoFileClip("project_video.mp4")
-# white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-# white_clip.write_videofile(white_output, audio=False)
-
-
 
 # ---------------------------------------------Code for writing ouput file------------------------------------------------#
 # f, (ax1, ax2) = plt.subplots(1,2, figsize = (24,9))
