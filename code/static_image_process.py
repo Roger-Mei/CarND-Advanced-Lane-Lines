@@ -43,9 +43,9 @@ for fname in images:
 # Camera calibration
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-# ###########################################################################################################################
-# # Apply a distortion correction to raw images.                                                                            #
-# ###########################################################################################################################
+###########################################################################################################################
+# Apply a distortion correction to raw images.                                                                            #
+###########################################################################################################################
 """
 Implementation of this section
 """
@@ -79,7 +79,6 @@ Implementation of this section
 """
 result, left_fit, right_fit, ploty = src.functions.fit_polynomial(warped_binary)
 
-
 ###########################################################################################################################
 # Determine the curvature of the lane and vehicle position with respect to center.                                        #
 ###########################################################################################################################
@@ -112,8 +111,11 @@ Implementation of this section
 """
 result = src.functions.process_image(img)
 
+plt.imshow(result)
+plt.show()
+
 ###########################################################################################################################
-# Video output                                                                                   #
+# Video output                                                                                                            #
 ###########################################################################################################################
 """
 Implementation of this section
