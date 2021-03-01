@@ -103,7 +103,7 @@ I implemented `./code/static_image_process.py`.  Here is an example of my result
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./test_video_output)
+Here's a [link to my video result](https://github.com/Roger-Mei/CarND-Advanced-Lane-Lines/blob/master/test_videos_output/solidWhiteRight2.mp4)
 
 ---
 
