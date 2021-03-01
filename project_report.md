@@ -19,8 +19,8 @@ The goals / steps of this project are the following:
 [image1]: ./undistorted_test_images/undistorted_test1.jpg "Undistorted"
 [image2]: ./undistorted_test_images/example.jpg "Road Transformed"
 [image3]: ./threshold_binary_images/combined_thresholds.jpg "Binary Example"
-[image4]: ./perspective_transform_images/warped_images.jpg "Warp Example"
-[image5]: ./laneline_detection_and_fit/lane_detection_and_fit.jpg "Fit Visual"
+[image4]: ./perpective_transform_images/warped_images.jpg "Warp Example"
+[image5]: ./laneline_detection_and_fit/Lane_detection_and_fit.jpg "Fit Visual"
 [image6]: ./unwarped_image_with_data/unwarped_image_with_data.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
 
