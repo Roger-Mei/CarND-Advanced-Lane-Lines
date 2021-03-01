@@ -21,8 +21,8 @@ The goals / steps of this project are the following:
 [image3]: ./threshold_binary_images/combined_thresholds.jpg "Binary Example"
 [image4]: ./perpective_transform_images/warped_images.jpg "Warp Example"
 [image5]: ./laneline_detection_and_fit/lane_detection_and_fit2.jpg "Fit Visual"
-[image6]: ./unwarped_image_with_data/unwarped_image_with_data.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image6]: ./unwarped_img_with_data/unwarped_image_with_data.jpg "Output"
+[video1]: ./test_videos_output/solidWhiteRight2.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
