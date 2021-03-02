@@ -37,5 +37,5 @@ if you want to implement the video process pipeline, pelase use `cd code` to jum
 Project Report
 ---
 
-TO have access to the project report, please click [this link] (https://github.com/Roger-Mei/CarND-Advanced-Lane-Lines/blob/master/project_report.md).
+TO have access to the project report, please click [this link](https://github.com/Roger-Mei/CarND-Advanced-Lane-Lines/blob/master/project_report.md).
 
