@@ -19,10 +19,10 @@ The goals / steps of this project are the following:
 [image1]: ./undistorted_test_images/undistorted_test1.jpg "Undistorted"
 [image2]: ./undistorted_test_images/example.jpg "Road Transformed"
 [image3]: ./threshold_binary_images/combined_thresholds.jpg "Binary Example"
-[image4]: ./perspective_transform_images/warped_images.jpg "Warp Example"
-[image5]: ./laneline_detection_and_fit/lane_detection_and_fit.jpg "Fit Visual"
-[image6]: ./unwarped_image_with_data/unwarped_image_with_data.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image4]: ./perpective_transform_images/warped_images.jpg "Warp Example"
+[image5]: ./laneline_detection_and_fit/lane_detection_and_fit2.jpg "Fit Visual"
+[image6]: ./unwarped_img_with_data/unwarped_image_with_data.jpg "Output"
+[video1]: ./test_videos_output/solidWhiteRight2.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -103,7 +103,7 @@ I implemented `./code/static_image_process.py`.  Here is an example of my result
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./test_video_output)
+Here's a [link to my video result](https://github.com/Roger-Mei/CarND-Advanced-Lane-Lines/blob/master/test_videos_output/solidWhiteRight2.mp4)
 
 ---
 
