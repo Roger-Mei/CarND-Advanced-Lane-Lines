@@ -111,4 +111,8 @@ Here's a [link to my video result](./test_video_output)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Issue when implement perspective transformation: It is not reasonable to arbitarily choose four points to do the perspective transformation on `src` and `dst`. For the convenience of computing the car's distance to lane center, we should choose the bottom of center vertical line as one `src` point and project it on the `dst`.
+
+Issues before adding a look-ahead fileter: The performance of the pipeline is slow and not stable, especially in the image where there is an interseciton between the lane line and the shadows of the tree. With shadow involved, the detected lanes are extremely twsted. With a look-ahead filter, the issue is well resolved: with a narrowed searching horizon, it saves a lot computation time. Also, if the curvature or end point of polynomial changes drastically, the program will choose the previous solution, which will prevent the distortion caused by the shadow.
+
+Issues with cracked lanes: Although look-ahead filter resolve the issue of the shadow, it stll doesn't resolve the complicated lane condition, like cracked lane lines in challenge videos. Also, the current program doesn't have the capability of solving the side shadow scenario, where a sharp gradient is also involved.
